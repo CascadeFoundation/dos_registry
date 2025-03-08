@@ -4,7 +4,7 @@ use std::type_name::{Self, TypeName};
 use sui::event::emit;
 use sui::table::{Self, Table};
 
-public use fun registry_admin_cap_registry_id as RegistryAdminCap.id;
+public use fun registry_admin_cap_registry_id as RegistryAdminCap.registry_id;
 
 public struct Registry<phantom T: key, phantom K: copy + drop + store> has key, store {
     id: UID,

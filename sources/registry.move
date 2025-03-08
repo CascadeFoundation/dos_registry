@@ -4,13 +4,15 @@ use std::type_name::{Self, TypeName};
 use sui::event::emit;
 use sui::table::{Self, Table};
 
+public use fun registry_admin_cap_registry_id as RegistryAdminCap.id;
+
 public struct Registry<phantom T: key, phantom K: copy + drop + store> has key, store {
     id: UID,
     kind: RegistryKind,
     obj_ids: Table<K, ID>,
 }
 
-public struct RegistryAdminCap has key, store {
+public struct RegistryAdminCap<phantom T: key> has key, store {
     id: UID,
     registry_id: ID,
 }
@@ -43,7 +45,7 @@ const EInvalidRegistryAdminCap: u64 = 1;
 public fun new<T: key, K: copy + drop + store>(
     kind: RegistryKind,
     ctx: &mut TxContext,
-): (Registry<T, K>, RegistryAdminCap) {
+): (Registry<T, K>, RegistryAdminCap<T>) {
     let registry = Registry {
         id: object::new(ctx),
         kind: kind,
@@ -73,7 +75,7 @@ public fun new_uncapped_kind(): RegistryKind {
 
 public fun add<T: key, K: copy + drop + store>(
     self: &mut Registry<T, K>,
-    cap: &RegistryAdminCap,
+    cap: &RegistryAdminCap<T>,
     key: K,
     obj: &T,
 ) {
@@ -97,7 +99,7 @@ public fun add<T: key, K: copy + drop + store>(
 
 public fun remove<T: key, K: copy + drop + store>(
     self: &mut Registry<T, K>,
-    cap: &RegistryAdminCap,
+    cap: &RegistryAdminCap<T>,
     key: K,
 ) {
     assert!(cap.registry_id == self.id.to_inner(), EInvalidRegistryAdminCap);
@@ -117,4 +119,8 @@ public fun obj_id_from_key<T: key, K: copy + drop + store>(self: &Registry<T, K>
 
 public fun size<T: key, K: copy + drop + store>(self: &Registry<T, K>): u64 {
     self.obj_ids.length()
+}
+
+public fun registry_admin_cap_registry_id<T: key>(cap: &RegistryAdminCap<T>): ID {
+    cap.registry_id
 }
